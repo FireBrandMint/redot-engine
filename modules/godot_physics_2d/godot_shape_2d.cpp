@@ -571,6 +571,32 @@ real_t GodotConvexPolygonShape2D::get_moment_of_inertia(real_t p_mass, const Siz
 	return p_mass * aabb_new.size.dot(aabb_new.size) / 12.0;
 }
 
+void GodotConvexPolygonShape2D::update_xformed_normals(const Transform2D &p_xform) {
+
+	bool unchanged = !fundamental_change;
+	bool formed = (last_xform[0] == p_xform.columns[0]) & (last_xform[1] == p_xform.columns[1]);
+	if(unchanged & formed)
+	{
+		return;
+	}
+	int a = 1;
+
+	if(simulation_normals == nullptr)
+		simulation_normals = (Vector2*)malloc(sizeof(Vector2) * point_count);
+	else if(sizeof(simulation_normals) * sizeof(Vector2) != point_count * sizeof(Vector2))
+	{
+		free(simulation_normals);
+		simulation_normals = (Vector2*)malloc(sizeof(Vector2) * point_count);
+	}
+
+	for(int i = 0; i < point_count; ++i)
+	{
+		Vector2 a = points[i].pos;
+		Vector2 b = points[i == point_count ? 0 : i + 1].pos;
+		simulation_normals[i] = (p_xform.xform(b) - p_xform.xform(a)).normalized().orthogonal();
+	}
+}
+
 void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 #ifdef REAL_T_IS_DOUBLE
 	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
@@ -625,7 +651,6 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 	}
 
 	configure(aabb_new);
-	fundamental_change = true;
 }
 
 Variant GodotConvexPolygonShape2D::get_data() const {
@@ -643,6 +668,7 @@ Variant GodotConvexPolygonShape2D::get_data() const {
 GodotConvexPolygonShape2D::~GodotConvexPolygonShape2D() {
 	if (points) {
 		memdelete_arr(points);
+		if(simulation_normals != nullptr) free(simulation_normals);
 	}
 }
 

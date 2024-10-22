@@ -417,10 +417,12 @@ class GodotConvexPolygonShape2D : public GodotShape2D {
 	};
 
 	Point *points = nullptr;
-	Point *simulation_normals;
 	int point_count = 0;
 
+private:
 	bool fundamental_change = true;
+	Vector2 last_xform[2] = {Vector2(-999999.9, -999999.9), Vector2(-999999.9, -999999.9)};
+	Vector2 *simulation_normals = nullptr;
 
 public:
 	_FORCE_INLINE_ int get_point_count() const { return point_count; }
@@ -431,6 +433,9 @@ public:
 		p_idx++;
 		Vector2 b = points[p_idx == point_count ? 0 : p_idx].pos;
 		return (p_xform.xform(b) - p_xform.xform(a)).normalized().orthogonal();
+	}
+	_FORCE_INLINE_ Vector2 get_xformed_segment_normal_cached(int p_idx) const {
+		return simulation_normals[p_idx];
 	}
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CONVEX_POLYGON; }
@@ -444,6 +449,7 @@ public:
 
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
+	void update_xformed_normals(const Transform2D &p_xform);
 
 	_FORCE_INLINE_ void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
 		if (!points || point_count <= 0) {

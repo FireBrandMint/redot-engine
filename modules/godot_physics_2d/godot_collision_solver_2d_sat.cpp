@@ -1078,14 +1078,19 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape2D *p_a, co
 		return;
 	}
 
+	//get those bad things here
+
+	convex_A->update_xformed_normals();
+	convex_B->update_xformed_normals();
+
 	for (int i = 0; i < convex_A->get_point_count(); i++) {
-		if (!separator.test_axis(convex_A->get_xformed_segment_normal(p_transform_a, i))) {
+		if (!separator.test_axis(convex_A->get_xformed_segment_normal_cached(p_transform_a, i))) {
 			return;
 		}
 	}
 
 	for (int i = 0; i < convex_B->get_point_count(); i++) {
-		if (!separator.test_axis(convex_B->get_xformed_segment_normal(p_transform_b, i))) {
+		if (!separator.test_axis(convex_B->get_xformed_segment_normal_cached(p_transform_b, i))) {
 			return;
 		}
 	}
