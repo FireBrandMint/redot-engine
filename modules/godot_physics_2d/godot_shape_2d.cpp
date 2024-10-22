@@ -625,6 +625,7 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 	}
 
 	configure(aabb_new);
+	fundamental_change = true;
 }
 
 Variant GodotConvexPolygonShape2D::get_data() const {

@@ -417,7 +417,10 @@ class GodotConvexPolygonShape2D : public GodotShape2D {
 	};
 
 	Point *points = nullptr;
+	Point *simulation_normals;
 	int point_count = 0;
+
+	bool fundamental_change = true;
 
 public:
 	_FORCE_INLINE_ int get_point_count() const { return point_count; }
