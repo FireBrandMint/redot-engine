@@ -576,17 +576,23 @@ void GodotConvexPolygonShape2D::update_xformed_normals(const Transform2D &p_xfor
 	bool unchanged = !fundamental_change;
 	bool formed = (last_xform[0] == p_xform.columns[0]) & (last_xform[1] == p_xform.columns[1]);
 	if(unchanged & formed)
-	{
 		return;
-	}
+
 	int a = 1;
 
 	if(simulation_normals == nullptr)
 		simulation_normals = (Vector2*)malloc(sizeof(Vector2) * point_count);
-	else if(sizeof(simulation_normals) * sizeof(Vector2) != point_count * sizeof(Vector2))
+	else
 	{
-		free(simulation_normals);
-		simulation_normals = (Vector2*)malloc(sizeof(Vector2) * point_count);
+		int sn_memorylen = sizeof(simulation_normals);
+		int sn_expected_ml = point_count * sizeof(Vector2);
+		//if the array of normals don't have space, reallocate it to solve it!
+		//and if the array of normals is way too big for its task, realocate it too!
+		if(sn_memorylen < sn_expected_ml || sn_memorylen > sn_expected_ml * 2)
+		{
+			free(simulation_normals);
+			simulation_normals = (Vector2*)malloc(sizeof(Vector2) * point_count);
+		}
 	}
 
 	for(int i = 0; i < point_count; ++i)
